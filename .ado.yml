@@ -1,0 +1,49 @@
+trigger:
+  - main
+
+pr:
+  - main
+
+jobs:
+  - job: PerfView_Debug
+    pool:
+      vmImage: 'windows-2025-vs2026'
+      name: Azure Pipelines
+
+    steps:
+    - template: /.pipelines/perfview-job.yml
+      parameters:
+        flavor: 'Debug'
+
+    - task: PublishPipelineArtifact@1
+      displayName: 'Publish Artifacts'
+      inputs:
+        targetPath: '$(build.artifactstagingdirectory)'
+        artifact: 'PerfViewBinaries-Debug'
+        parallel: true
+      condition: succeededOrFailed()
+
+  - job: PerfView_Release
+    pool:
+      vmImage: 'windows-2025-vs2026'
+      name: Azure Pipelines
+
+    steps:
+    - template: /.pipelines/perfview-job.yml
+      parameters:
+        flavor: 'Release'
+
+    - task: PublishPipelineArtifact@1
+      displayName: 'Publish Artifact'
+      inputs:
+        targetPath: '$(build.artifactstagingdirectory)'
+        artifact: 'PerfViewBinaries-Release'
+        parallel: true
+
+  - job: PerfCollect
+    pool:
+      vmImage: 'ubuntu-latest'
+      name: Azure Pipelines
+
+    steps:
+    - template: /.pipelines/perfcollect-job.yml
